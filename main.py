@@ -60,7 +60,7 @@ with open("./checkin.json","r") as f:
     template = json.load(f)
 for k,v in template.items():
     if initdict[k]:
-        template[k] = v
+        template[k] = initdict[k]
     else:
         template[k] = "请选择"
 template['CREATED_AT'] = datetime.now().strftime("%Y-%m-%d %H:%M")
