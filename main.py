@@ -51,25 +51,25 @@ new_cookies = r.request._cookies
 new_cookies = merge_cookies(new_cookies, r.cookies)
 
 """
-update time and WID
+update initData
 """
-r = requests.post("http://ehall.seu.edu.cn/qljfwapp2/sys/lwReportEpidemicSeu/mobile/dailyReport/getMyTodayReportWid.do", cookies=r.request._cookies)
-initdict = json.loads(r.text)["datas"]["getMyTodayReportWid"]['rows'][0]
+r = requests.post("http://ehall.seu.edu.cn/qljfwapp2/sys/lwReportEpidemicSeu/mobile/dailyReport/getMyTodayReportWid.do", cookies=new_cookies)
+submitdict = json.loads(r.text)["datas"]["getMyTodayReportWid"]['rows'][0]
 
-with open("./checkin.json","r") as f:
-    template = json.load(f)
-for k,v in template.items():
-    if initdict[k]:
-        template[k] = initdict[k]
-    else:
-        template[k] = "请选择"
-template['CREATED_AT'] = datetime.now().strftime("%Y-%m-%d %H:%M")
-template['DZ_DBRQ'] = datetime.strptime(str(date.today() + timedelta(days=-1)),"%Y-%m-%d").strftime("%Y-%m-%d")
+r = requests.post("http://ehall.seu.edu.cn/qljfwapp2/sys/lwReportEpidemicSeu/mobile/dailyReport/getLatestDailyReportData.do", cookies=new_cookies)
+initdict = json.loads(r.text)["datas"]["getLatestDailyReportData"]['rows'][0]
+submitdict.update(initdict)
+
+submitdict['DZ_JSDTCJTW'] = 37
+submitdict['NEED_CHECKIN_DATE'] = datetime.now().strftime("%Y-%m-%d") 
+submitdict['CZRQ'] = datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
+submitdict['CREATED_AT'] = datetime.now().strftime("%Y-%m-%d %H:%M")
+submitdict['DZ_DBRQ'] = datetime.strptime(str(date.today() + timedelta(days=-1)),"%Y-%m-%d").strftime("%Y-%m-%d")
 
 """
 checkin
 """
 r = requests.post("http://ehall.seu.edu.cn/qljfwapp2/sys/lwReportEpidemicSeu/mobile/dailyReport/T_REPORT_EPIDEMIC_CHECKIN_SAVE.do", cookies=new_cookies,
-                  data=template)
+                  data=submitdict)
 print(r.status_code)
 print(r.text)
